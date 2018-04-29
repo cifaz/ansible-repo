@@ -1,0 +1,9 @@
+---
+- hosts: web
+  vars_files:
+    - ../vars.yml
+  roles:
+    - role: wtanaka.apache-kafka
+      when: enable_kafka
+
+

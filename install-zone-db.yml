@@ -1,0 +1,90 @@
+
+- hosts:
+    - db
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: install db server
+      debug:
+        msg: "install db server"
+
+    - name: copy mongodb conf to yum repo
+      copy:
+        src: "{{ mongodb_repo }}"
+        dest: /etc/yum.repos.d/
+
+    - name: copy mysql conf to yum repo
+      copy:
+        src: "{{ mysql_repo }}"
+        dest: /etc/yum.repos.d/
+
+    - name: add group mysql
+      group:
+        name: mysql
+        state: present
+
+    - name: add user mysql
+      user:
+        name: mysql
+        groups: mysql
+        comment: mysql - mariadb
+        state: present
+
+    # 由于geerlingguy.mysql touch时报错, 先行创建
+    - name: mkdir /var/log/mariadb/
+      file:
+        path: /var/log/mariadb/
+        state: directory
+        owner: mysql
+        group: mysql
+
+    - name: mkdir /var/run/mariadb/
+      file:
+        path: /var/run/mariadb/
+        state: directory
+        owner: mysql
+        group: mysql
+
+    - name: install geerlingguy.mysql - mariadb
+      include_role:
+        name: geerlingguy.mysql
+      vars_files:
+          - vars.yml
+      when: enable_mysql
+
+    - name: MariaDB
+      shell: "echo exclude=MariaDB* >> /etc/yum.conf && uniq /etc/yum.conf"
+      when: enable_mysql
+
+    - name: install DavidWittman.redis
+      include_role:
+        name: DavidWittman.redis
+      vars_files:
+          - vars.yml
+      when: enable_redis
+
+    - name: redis
+      shell: "echo exclude=redis* >> /etc/yum.conf && uniq /etc/yum.conf"
+      when: enable_redis
+
+    - name: install wtanaka.apache-kafka
+      include_role:
+        name: wtanaka.apache-kafka
+      vars_files:
+          - vars.yml
+      when: enable_kafka
+
+    - name: kafka
+      shell: "echo exclude=kafka* >> /etc/yum.conf && uniq /etc/yum.conf"
+      when: enable_kafka
+
+    - name: install greendayonfire.mongodb
+      include_role:
+        name: greendayonfire.mongodb
+      vars_files:
+          - vars.yml
+      when: enable_mongodb
+
+    - name: mongodb
+      shell: "echo exclude=mongodb* >> /etc/yum.conf && uniq /etc/yum.conf"
+      when: enable_mongodb

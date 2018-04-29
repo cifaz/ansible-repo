@@ -1,0 +1,12 @@
+---
+- hosts: web
+  vars_files:
+    - ../vars.yml
+  roles:
+    - role: kanedafromparis.xwiki-tomcat
+      vars_files:
+        - ../vars.yml
+      when: enable_xwiki
+
+
+

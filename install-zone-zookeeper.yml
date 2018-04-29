@@ -1,0 +1,37 @@
+# add_host 是否可以替换hosts?
+
+- hosts:
+    - web
+    - db
+    - local
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: install srsp.oracle-java
+      include_role:
+        name: srsp.oracle-java
+      vars_files:
+          - vars.yml
+      when: enable_oracle_java
+
+    - name: check data_dir exists
+      file:
+        path: "{{ data_dir }}"
+        state: directory
+
+    - name: check log_dir exists
+      file:
+        path: "{{ log_dir }}"
+        state: directory
+
+    - name: check zookeeper_tarball_dir exists
+      file:
+        path: "{{ zookeeper_tarball_dir }}"
+        state: directory
+
+    - name: install AnsibleShipyard.ansible-zookeeper
+      include_role:
+        name: AnsibleShipyard.ansible-zookeeper
+      vars_files:
+          - vars.yml
+      when: enable_zookeeper

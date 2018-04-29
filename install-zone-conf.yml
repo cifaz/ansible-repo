@@ -1,0 +1,42 @@
+# 配置文件处理
+- hosts:
+    - localhost
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: conf nginx
+      vars:
+        server_name: "{{item.server_name}}"
+        log_evn: "{{item.log_evn}}"
+        upstream_name: "{{item.upstream_name}}"
+        ip_and_port: "{{item.ip_and_port}}"
+      template:
+        src: conf/nginx.conf.j2
+        dest: "/etc/nginx/conf.d/{{ item.server_name }}.conf"
+      loop: "{{ nginx_conf }}"
+
+    - name: conf dnsmasq
+      vars:
+        host_name: "{{item.host_name}}"
+        target_server_ip: "{{item.target_server_ip}}"
+      template:
+        src: conf/dnsmasq.conf.j2
+        dest: "/etc/dnsmasq.d/{{ item.host_name }}.conf"
+      loop: "{{ dns_conf }}"
+
+    - name: stop dns and nginx
+      service:
+        name: "{{ item }}"
+        state: stopped
+      loop:
+        - nginx
+        - dnsmasq
+
+    - name: start dns and nginx
+      service:
+        name: "{{ item }}"
+        state: started
+      loop:
+        - nginx
+        - dnsmasq
+
